@@ -81,7 +81,7 @@ if __name__=="__main__":
     filePath = os.path.join(models_path,"ssd_mobilenet_v1_coco_11_06_2017.tar.gz")
     os.chdir(models_path)
 
-    
+
     if (filePath.endswith("tar.gz")):
         tar = tarfile.open(filePath, "r:gz")
         tar.extractall()
