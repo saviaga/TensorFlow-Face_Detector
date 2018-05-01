@@ -1,3 +1,7 @@
+"""
+This script creates the TF Records that we need for Tensor Flow
+"""
+
 import tensorflow as tf
 from PIL import Image
 import os
@@ -8,7 +12,7 @@ import argparse
 from tqdm import tqdm
 
 
-def generate_class_num(points):
+def generate_class_number(points):
     output = []
     with open(trainable_classes_file, 'r') as file:
         trainable_classes = file.read().split('\n')
@@ -19,21 +23,11 @@ def generate_class_num(points):
     return output
 
 
-# Construct a record for each image.
-# If we can't load the image file properly lets skip it
-def group_to_tf_record(point, image_directory):
-    #for anno in point['annotations']:
-       # print(float(anno['x0']))
 
+def create_tf_record(point, image_directory):
     format = b'jpeg'
-    xmins = []
-    xmaxs = []
-    ymins = []
-    ymaxs = []
-    class_nums = []
-    class_ids = []
+    xmins = xmaxs = ymins = ymaxs = class_nums = class_ids =[]
     image_id = point['id']
-
     filename = os.path.join(image_directory, image_id + '.jpg')
     print(filename)
     try:
@@ -47,9 +41,7 @@ def group_to_tf_record(point, image_directory):
         return None
     key = hashlib.sha256(encoded_jpg).hexdigest()
     for anno in point['annotations']:
-
         xmins.append(float(anno['x0']))
-
         xmaxs.append(float(anno['x1']))
         ymins.append(float(anno['y0']))
         ymaxs.append(float(anno['y1']))
@@ -83,6 +75,8 @@ parser.add_argument('--points_path', dest='points_file_path', required=True)
 parser.add_argument('--record_save_path', dest='record_save_path', required=True)
 parser.add_argument('--trainable_classes_path', dest='trainable_classes_path', required=True)
 parser.add_argument('--saved_images_directory', dest='saved_images_directory', required=True)
+
+
 if __name__ == "__main__":
     args = parser.parse_args()
     trainable_classes_file = args.trainable_classes_path
@@ -90,11 +84,10 @@ if __name__ == "__main__":
     points_file = args.points_file_path
     saved_images_directory = args.saved_images_directory
     points = load_points(points_file)
-   # print(points)
-    with_class_num = generate_class_num(points)
+    with_class_num = generate_class_number(points)
     writer = tf.python_io.TFRecordWriter(record_save_path)
     for point in tqdm(points, desc="writing to file"):
-        record = group_to_tf_record(point, saved_images_directory)
+        record = create_tf_record(point, saved_images_directory)
         if record:
             serialized = record.SerializeToString()
             writer.write(serialized)

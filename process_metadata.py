@@ -1,32 +1,29 @@
+"""
+# Formats the raw OpenImages csv bounding box
+"""
+
 import csv
 import json
 import argparse
 from tqdm import tqdm
-# Formats the raw openimages csv bounding box
-# annotations and image files into filtered, parsed json.
 
 
-# Lets extract not only each annotation, but a list of image id's.
-# This id index will be used to filter out images that don't have valid annotations.
-def format_annotations(annotations_path, trainable_classes_path):
+
+def annotations_formatting(annotations_path, trainable_classes_path):
     annotations = []
     cont=0
     ids = []
     with open(trainable_classes_path, 'r') as file:
         trainable_classes = file.read().split('\n')
-        print(trainable_classes)
+        print("we will use images from these classes",trainable_classes)
 
     with open(annotations_path, 'r') as annofile:
         for row in csv.reader(annofile):
-            if row[2] in trainable_classes and cont<=800:
+            if row[2] in trainable_classes:
                 annotation = {'id': row[0], 'label': row[2], 'confidence': row[3], 'x0': row[4],
                               'x1': row[5], 'y0': row[6], 'y1': row[7]}
                 annotations.append(annotation)
                 ids.append(row[0])
-                print("annotations cont ",cont," ",row[0])
-            cont+= 1
-            if cont > 800:
-                break
     ids = dedupe(ids)
     return annotations, ids
 
@@ -49,10 +46,9 @@ def format_images(images_path):
     return images
 
 
-# Lets check each image and only keep it if it's ID has a bounding box annotation associated with it.
-def filter_images(dataset, ids):
+def image_filtering(dataset, ids):
     output_list = []
-    for element in tqdm(dataset, desc="filtering out non-essential images"):
+    for element in tqdm(dataset, desc="only keeps the images we want"):
         if element['id'] in set(ids):
             output_list.append(element)
 
@@ -64,10 +60,9 @@ def save_data(data, out_path):
         json.dump(data, f)
 
 
-# Gathers annotations for each image id, to be easier to work with.
 def points_maker(annotations):
     by_id = {}
-    for anno in tqdm(annotations, desc="grouping annotations"):
+    for anno in tqdm(annotations, desc="groups annotations"):
         if anno['id'] in by_id:
             by_id[anno['id']].append(anno)
         else:
@@ -94,10 +89,9 @@ if __name__ == "__main__":
     point_output_path = args.point_path
     image_index_output_path = args.index_out_path
     trainable_classes_path = args.trainable_path
-    annotations, valid_image_ids = format_annotations(anno_input_path, trainable_classes_path)
+    annotations, valid_image_ids = annotations_formatting(anno_input_path, trainable_classes_path)
     images = format_images(image_index_input_path)
     points = points_maker(annotations)
-    filtered_images = filter_images(images, valid_image_ids)
+    filtered_images = image_filtering(images, valid_image_ids)
     save_data(filtered_images, image_index_output_path)
-    print("saving data to ",image_index_output_path)
     save_data(points, point_output_path)
