@@ -80,7 +80,6 @@ def readAndWrite(bbx_gttxtPath,Train_path):
 def runScriptForData(folder,graphfolder,graphtxt,tfimagefolder):
     # get images
     Train_path = os.path.join(curr_path, "data",folder, "images")
-    print(Train_path)
     bbx_gttxtPath = os.path.join(curr_path, "data", graphfolder,graphtxt)
     readAndWrite(bbx_gttxtPath,Train_path)
     # save in folders
@@ -95,7 +94,7 @@ def runScriptForData(folder,graphfolder,graphtxt,tfimagefolder):
 
     rootdir_glob = Train_path + '/**/*'
     file_list = [f for f in iglob(rootdir_glob, recursive=True) if os.path.isfile(f)]
-    train_annotations_index = os.path.join(curr_path, "data", "tf_wider_train", "annotations", "train.txt")
+    train_annotations_index = os.path.join(curr_path, "data", tfimagefolder, "annotations", "train.txt")
     with open(train_annotations_index, "a") as indexFile:
         for f in file_list:
             if ".xml" in f:
@@ -111,7 +110,7 @@ if __name__=="__main__":
     cnt = 0
     hog = cv2.HOGDescriptor((80, 80), (16, 16), (8,8), (8,8), 9)
 
-    runScriptForData("WIDER_train_images", "wider_face_split", "wider_face_train_bbx_gt.txt", "tf_wider_train_images")
 
     runScriptForData("WIDER_val_images", "wider_face_split", "wider_face_val_bbx_gt.txt", "tf_wider_val_images")
 
+    runScriptForData("WIDER_train_images", "wider_face_split", "wider_face_train_bbx_gt.txt", "tf_wider_train_images")
