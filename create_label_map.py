@@ -25,4 +25,4 @@ if __name__ == '__main__':
     trainable_classes_file = args.trainable_classes
     class_description_file = args.class_description
     label_map_path = args.label_map_path
-    create_labeap(label_map_path, trainable_classes_file)
+    create_label_map(label_map_path, trainable_classes_file)
